@@ -102,6 +102,8 @@
     left: 50%;
     transform: translateX(-50%);
     z-index: 1;
+    display: flex;
+    gap: 0.75em;
 }
 
 .buttons svg {
@@ -122,43 +124,39 @@
 }
 
 .volume-progress-bar {
-    display: none;
-    width: 0.5em;
-    height: 16vh;
+    display: block;
+    width: 10vw;
+    height: 0.5em;
     background: var(--color-1);
     border-radius: 0.25em;
     overflow: hidden;
     position: relative;
+    cursor: pointer;
 }
 
 .volume-progress-bar div {
     border-radius: 0.25em;
 }
 
-.volume {
+.btns-r {
     font-size: 1.2em;
     position: fixed;
     right: 8em;
     bottom: 1.5em;
+    z-index: 1;
     display: flex;
     align-items: center;
-    flex-direction: column-reverse;
+    flex-direction: row;
+    gap: 1em;
 }
 
-.volume svg {
+.btns-r svg {
     width: auto;
     height: 2em;
 }
 
-.volume:hover {
-    .volume-progress-bar {
-        display: flex;
-    }
-    cursor: pointer;
-}
-
-.volume-progress-bar:hover {
-    display: flex;
+.btns-r svg.btn.active {
+    filter: drop-shadow(0 0 5px var(--text-1));
 }
 
 #content-player {

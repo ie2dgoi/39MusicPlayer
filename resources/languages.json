@@ -20,6 +20,8 @@
         "No more results": "没有更多结果了",
         "Loading": "加载中...",
         "Search Source": "优先搜索音源",
-        "Allow Prerelease": "允许预览版"
+        "Allow Prerelease": "允许预览版",
+        "Sequential Play": "顺序播放",
+        "Shuffle Play": "随机播放"
     }
 }

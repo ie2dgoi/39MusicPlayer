@@ -38,6 +38,7 @@ function initVisualizer() {
             gainNode.disconnect();
         } catch (e) {}
         gainNode = null;
+        window.volumeGainNode = null;
 
         if (audioCtx && audioCtx.state !== "closed") {
             audioCtx.close().catch((e) => {
@@ -66,9 +67,9 @@ function initVisualizer() {
         dataArray = new Float32Array(bufferLength);
         frameHistory = [];
         window.volumeGainNode = gainNode;
-        const savedVolume = localStorage.getItem("playerVolume");
-        const initialVolume = savedVolume !== null ? parseFloat(savedVolume) : 1;
-        gainNode.gain.value = initialVolume;
+        // 音量来源统一走 volume.js 的配置缓存（原来读 localStorage["playerVolume"]，
+        // 那个 key 从来没被写过，所以每次重建 AudioContext 都会把音量拉回 1）
+        gainNode.gain.value = typeof getSavedVolume === "function" ? getSavedVolume() : 1;
     }
 
     function drawSpectrogram() {
