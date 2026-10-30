@@ -131,10 +131,12 @@ function refreshUpdaterSettings(win, configManager) {
 async function checkForUpdates() {
     if (!autoUpdater) {
         Logger.warn("[autoUpdater] autoUpdater 不可用，无法检查更新");
+        send(targetWindow, "update-skipped", { message: "autoUpdater unavailable" });
         return null;
     }
     if (!app.isPackaged) {
         Logger.warn("[autoUpdater] 未打包运行，跳过检查更新");
+        send(targetWindow, "update-skipped", { message: "Not packaged, skipped" });
         return null;
     }
     try {

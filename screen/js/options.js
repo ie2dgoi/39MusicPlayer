@@ -1,6 +1,7 @@
 let sourceSelectCustom = null;
 
 const UPDATE_BTN_DEFAULT_TEXT = "Check";
+const UPDATE_WATCHDOG_MS = 60 * 1000;
 
 function setupUpdateSection() {
     const checkUpdateBtn = document.getElementById("check-update-btn");
@@ -10,6 +11,7 @@ function setupUpdateSection() {
     if (!checkUpdateBtn) return;
 
     let resetTimer = null;
+    let watchdogTimer = null;
 
     const setProgressVisible = (visible) => {
         if (progressBar) progressBar.hidden = !visible;
@@ -30,8 +32,16 @@ function setupUpdateSection() {
         checkUpdateBtn.disabled = Boolean(disabled);
     };
 
+    const clearWatchdog = () => {
+        if (watchdogTimer) {
+            clearTimeout(watchdogTimer);
+            watchdogTimer = null;
+        }
+    };
+
     // 终态提示：显示几秒后恢复默认文案
     const flashButton = (text) => {
+        clearWatchdog();
         setButton(text, false);
         resetTimer = setTimeout(() => {
             resetTimer = null;
@@ -39,16 +49,28 @@ function setupUpdateSection() {
         }, 3000);
     };
 
+    const armWatchdog = () => {
+        clearWatchdog();
+        watchdogTimer = setTimeout(() => {
+            watchdogTimer = null;
+            setProgressVisible(false);
+            setProgress(0);
+            flashButton("Timed out, try again");
+        }, UPDATE_WATCHDOG_MS);
+    };
+
     checkUpdateBtn.addEventListener("click", () => {
         setButton("Checking...", true);
         setProgressVisible(false);
         setProgress(0);
+        armWatchdog();
         window.electronAPI.checkForUpdates();
     });
 
     // checking-for-update 事件不带 payload，保持「检查中」状态即可
     window.electronAPI.onUpdateStatus(() => {
         setButton("Checking...", true);
+        armWatchdog();
     });
 
     window.electronAPI.onUpdateNotAvailable(() => {
@@ -61,6 +83,7 @@ function setupUpdateSection() {
         setProgressVisible(true);
         setProgress(0);
         setButton("Downloading 0%", true);
+        armWatchdog();
     });
 
     window.electronAPI.onUpdateProgress((_event, data) => {
@@ -68,12 +91,21 @@ function setupUpdateSection() {
         setProgressVisible(true);
         setProgress(percent);
         setButton(`Downloading ${Math.round(percent)}%`, true);
+        armWatchdog();
     });
 
     window.electronAPI.onUpdateDownloaded(() => {
         setProgressVisible(true);
         setProgress(100);
-        setButton("Downloaded, restart to install", false);
+        flashButton("Downloaded, restart to install");
+        checkUpdateBtn.disabled = false;
+    });
+
+    window.electronAPI.onUpdateSkipped((_event, data) => {
+        setProgressVisible(false);
+        setProgress(0);
+        const message = typeof data === "string" ? data : data?.message || "Skipped";
+        flashButton(`Skipped: ${message}`);
     });
 
     window.electronAPI.onUpdateError((_event, data) => {
