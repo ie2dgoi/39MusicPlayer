@@ -124,6 +124,7 @@ function initializeApp() {
     });
 
     configManager = new ConfigManager(APP_NAME);
+    const logFile = Logger.init(configManager.configDir);
 
     registerProtocolHandler(app);
     registerIPC(app, configManager);

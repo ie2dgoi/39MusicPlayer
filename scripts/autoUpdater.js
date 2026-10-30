@@ -15,7 +15,11 @@ let periodicTimer = null;
 
 function send(win, channel, data) {
     const msg = `[autoUpdater:${channel}]`;
-    Logger.info(msg, data);
+    if (data === undefined) {
+        Logger.info(msg);
+    } else {
+        Logger.info(msg, data);
+    }
     if (!win || win.isDestroyed?.()) return;
     win.webContents?.send(channel, data);
 }
