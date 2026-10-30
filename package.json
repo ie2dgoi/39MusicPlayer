@@ -11,14 +11,14 @@
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/A439-Official/39MusicPlayer.git"
+        "url": "git+https://github.com/ie2dgoi/39MusicPlayer.git"
     },
     "author": "",
     "license": "ISC",
     "bugs": {
-        "url": "https://github.com/A439-Official/39MusicPlayer/issues"
+        "url": "https://github.com/ie2dgoi/39MusicPlayer/issues"
     },
-    "homepage": "https://github.com/A439-Official/39MusicPlayer#readme",
+    "homepage": "https://github.com/ie2dgoi/39MusicPlayer#readme",
     "devDependencies": {
         "electron": "^40.7.0",
         "electron-builder": "^26.8.1"
@@ -32,7 +32,7 @@
         "publish": [
             {
                 "provider": "github",
-                "owner": "A439-Official",
+                "owner": "ie2dgoi",
                 "repo": "39MusicPlayer"
             }
         ],

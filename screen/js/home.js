@@ -1,4 +1,4 @@
-const API_URL = "https://api.github.com/repos/A439-Official/39MusicPlayer/releases";
+const API_URL = "https://api.github.com/repos/ie2dgoi/39MusicPlayer/releases";
 
 async function initHomePage() {
     const container = document.getElementById("update-history");
