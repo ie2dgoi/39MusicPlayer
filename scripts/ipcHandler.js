@@ -4,7 +4,7 @@ import path from "path";
 import { fileURLToPath } from "node:url";
 import CacheManager from "./cacheManager.js";
 import ScriptLoader from "./scriptLoader.js";
-import { checkForUpdates, autoUpdater } from "./autoUpdater.js";
+import { checkForUpdates, refreshUpdaterSettings } from "./autoUpdater.js";
 import Logger from "./logger.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -86,13 +86,18 @@ function registerIPC(app, configManager) {
         try {
             return await checkForUpdates();
         } catch (err) {
+            // 错误已经由 autoUpdater 的 error 事件推给渲染层，这里只记日志，避免重复上报
             Logger.error("[ipcHandler] 检查更新失败:", err);
-            if (event.sender && !event.sender.isDestroyed()) {
-                event.sender.send("update-error", {
-                    message: err?.message || String(err),
-                    stack: err?.stack,
-                });
-            }
+        }
+    });
+
+    // 设置页切换「允许预览版」等选项后调用，让配置立即生效
+    ipcMain.handle("refresh-update-settings", async () => {
+        try {
+            return refreshUpdaterSettings(null, configManager);
+        } catch (err) {
+            Logger.error("[ipcHandler] 刷新更新配置失败:", err);
+            return null;
         }
     });
 

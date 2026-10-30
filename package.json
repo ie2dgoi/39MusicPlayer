@@ -26,6 +26,7 @@
     "build": {
         "appId": "xyz.a439.39musicplayer",
         "productName": "39MusicPlayer",
+        "artifactName": "${productName}-Setup-${version}.${ext}",
         "directories": {
             "output": "dist"
         },

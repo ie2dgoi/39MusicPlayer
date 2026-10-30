@@ -79,3 +79,30 @@
 .setting-item button:hover {
     background-color: var(--color-3);
 }
+
+.setting-item button:disabled {
+    cursor: default;
+    opacity: 0.7;
+}
+
+.update-progress-bar {
+    width: 100%;
+    max-width: 32em;
+    height: 0.5em;
+    margin-top: 0.75em;
+    background-color: var(--color-1);
+    border-radius: 0.25em;
+    overflow: hidden;
+}
+
+.update-progress-bar[hidden] {
+    display: none;
+}
+
+.update-progress-fill {
+    width: 0%;
+    height: 100%;
+    border-radius: 0.25em;
+    background-color: var(--text-1);
+    transition: width 0.2s linear;
+}

@@ -1,44 +1,91 @@
 let sourceSelectCustom = null;
 
-async function setupOptions() {
+const UPDATE_BTN_DEFAULT_TEXT = "Check";
+
+function setupUpdateSection() {
     const checkUpdateBtn = document.getElementById("check-update-btn");
+    const progressBar = document.getElementById("update-progress-bar");
+    const progressFill = document.getElementById("update-progress-fill");
 
-    if (checkUpdateBtn) {
-        checkUpdateBtn.addEventListener("click", () => {
-            checkUpdateBtn.disabled = true;
-            checkUpdateBtn.textContent = "Checking...";
-            window.electronAPI.checkForUpdates();
-        });
+    if (!checkUpdateBtn) return;
 
-        window.electronAPI.onUpdateStatus((_event, data) => {
-            checkUpdateBtn.disabled = false;
-            checkUpdateBtn.textContent = data?.message || data || "Check";
-        });
+    let resetTimer = null;
 
-        window.electronAPI.onUpdateNotAvailable((_event, data) => {
-            checkUpdateBtn.disabled = false;
-            checkUpdateBtn.textContent = data?.message || data || "Check";
-            setTimeout(() => {
-                checkUpdateBtn.textContent = "Check";
-            }, 3000);
-        });
+    const setProgressVisible = (visible) => {
+        if (progressBar) progressBar.hidden = !visible;
+    };
 
-        window.electronAPI.onUpdateAvailable((_event, data) => {
-            checkUpdateBtn.disabled = false;
-            checkUpdateBtn.textContent = data?.message || data || "Check";
-            setTimeout(() => {
-                checkUpdateBtn.textContent = "Check";
-            }, 3000);
-        });
+    const setProgress = (percent) => {
+        if (!progressFill) return;
+        const value = Math.max(0, Math.min(100, Number(percent) || 0));
+        progressFill.style.width = `${value}%`;
+    };
 
-        window.electronAPI.onUpdateError((_event, data) => {
-            checkUpdateBtn.disabled = false;
-            checkUpdateBtn.textContent = `Error: ${data?.message || data || "Unknown error"}`;
-            setTimeout(() => {
-                checkUpdateBtn.textContent = "Check";
-            }, 3000);
-        });
-    }
+    const setButton = (text, disabled) => {
+        if (resetTimer) {
+            clearTimeout(resetTimer);
+            resetTimer = null;
+        }
+        checkUpdateBtn.textContent = text;
+        checkUpdateBtn.disabled = Boolean(disabled);
+    };
+
+    // 终态提示：显示几秒后恢复默认文案
+    const flashButton = (text) => {
+        setButton(text, false);
+        resetTimer = setTimeout(() => {
+            resetTimer = null;
+            setButton(UPDATE_BTN_DEFAULT_TEXT, false);
+        }, 3000);
+    };
+
+    checkUpdateBtn.addEventListener("click", () => {
+        setButton("Checking...", true);
+        setProgressVisible(false);
+        setProgress(0);
+        window.electronAPI.checkForUpdates();
+    });
+
+    // checking-for-update 事件不带 payload，保持「检查中」状态即可
+    window.electronAPI.onUpdateStatus(() => {
+        setButton("Checking...", true);
+    });
+
+    window.electronAPI.onUpdateNotAvailable(() => {
+        setProgressVisible(false);
+        setProgress(0);
+        flashButton("Up to date");
+    });
+
+    window.electronAPI.onUpdateAvailable(() => {
+        setProgressVisible(true);
+        setProgress(0);
+        setButton("Downloading 0%", true);
+    });
+
+    window.electronAPI.onUpdateProgress((_event, data) => {
+        const percent = Math.max(0, Math.min(100, Number(data?.percent) || 0));
+        setProgressVisible(true);
+        setProgress(percent);
+        setButton(`Downloading ${Math.round(percent)}%`, true);
+    });
+
+    window.electronAPI.onUpdateDownloaded(() => {
+        setProgressVisible(true);
+        setProgress(100);
+        setButton("Downloaded, restart to install", false);
+    });
+
+    window.electronAPI.onUpdateError((_event, data) => {
+        setProgressVisible(false);
+        setProgress(0);
+        const message = typeof data === "string" ? data : data?.message || "Unknown error";
+        flashButton(`Error: ${message}`);
+    });
+}
+
+async function setupOptions() {
+    setupUpdateSection();
 
     // 添加可视化开关
     const visualizerToggleContainer = document.getElementById("visualizer-toggle-container");
@@ -52,12 +99,13 @@ async function setupOptions() {
         });
     }
 
-    // 添加允许预览版开关
+    // 添加允许预览版开关（改完立即重新应用更新配置，不用重启）
     const prereleaseToggleContainer = document.getElementById("prerelease-toggle-container");
     if (prereleaseToggleContainer) {
         window.electronAPI.getConfig("update.allowPrerelease", false).then((allowPrerelease) => {
             new ToggleSwitch(prereleaseToggleContainer, allowPrerelease, (enabled) => {
                 window.electronAPI.setConfig("update.allowPrerelease", enabled);
+                window.electronAPI.refreshUpdateSettings();
             });
         });
     }

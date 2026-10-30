@@ -16,7 +16,10 @@ contextBridge.exposeInMainWorld("electronAPI", {
     onUpdateStatus: (callback) => ipcRenderer.on("update-status", callback),
     onUpdateNotAvailable: (callback) => ipcRenderer.on("update-not-available", callback),
     onUpdateAvailable: (callback) => ipcRenderer.on("update-available", callback),
+    onUpdateProgress: (callback) => ipcRenderer.on("update-progress", callback),
+    onUpdateDownloaded: (callback) => ipcRenderer.on("update-downloaded", callback),
     onUpdateError: (callback) => ipcRenderer.on("update-error", callback),
+    refreshUpdateSettings: () => ipcRenderer.invoke("refresh-update-settings"),
 
     getCache: (cachePath) => ipcRenderer.invoke("get-cache", cachePath),
     saveCache: (cachePath, data) => ipcRenderer.invoke("save-cache", cachePath, data),
